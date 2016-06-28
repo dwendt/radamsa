@@ -50,6 +50,16 @@
                   (else ;; no more numbers
                      (values (cons x ll) n))))))
 
+      ;; (sample-path ..) → (byte ...)
+      (define (fname-suffix paths)
+         (if (null? paths)
+            (pick-suffix (list ""))
+            (let loop ((cs (reverse (string->list (car paths)))) (out null))
+               (cond
+                  ((null? cs) (string->list "data"))
+                  ((eq? (car cs) #\/) out)
+                  (else (loop (cdr cs) (cons (car cs) out)))))))
+
       (define (file-writer pat suf)
          (define (gen meta)
             (lets 
@@ -63,6 +73,7 @@
                               ((and (eq? char #\%) (pair? tl))
                                  (case (car tl)
                                     ((#\n) (render (get meta 'nth 0) (cdr tl)))
+                                    ((#\p) (append (fname-suffix (list (get meta 'source "/muted"))) (cdr tl)))
                                     ((#\s) (append suf (cdr tl)))
                                     ((#\0) ;; %0[0-9]+n -> testcase number with padding
                                        (lets
